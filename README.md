@@ -43,6 +43,11 @@ A future feature of this repository will be a listing of this code base's covera
 Any concepts from ExifTool's RDF output that are not mapped in this code base are preserved by attaching to the CASE output.  See e.g. all of the namespaced concepts starting with the prefix `exiftool-` in [this example output file](tests/govdocs1/files/799/987/analysis.json).
 
 
+#### Unstable representations
+
+To assist with review of location representations, the property [`locn:geometry`](https://www.w3.org/ns/locn#locn:geometry) is sometimes used to map EXIF geolocation information.  At the time of initial implementation, this RDF term was under the status "testing," and supported Literal and Object references.  The end user should assume the usage of `locn:geometry`, and any concepts linked by it, are *deprecated* in this code base, with no guarantee of future support or availability.  Removal of these futures will not be considered reason to issue a (SEMVER) major-version release.
+
+
 ## Versioning
 
 This project follows [SEMVER 2.0.0](https://semver.org/) where versions are declared.

@@ -21,6 +21,7 @@ import argparse
 import contextlib
 import logging
 import os
+import re
 
 import rdflib.plugins.sparql
 
@@ -53,6 +54,15 @@ NS_UCO_OBSERVABLE = rdflib.Namespace("https://unifiedcyberontology.org/ontology/
 NS_UCO_TYPES = rdflib.Namespace("https://unifiedcyberontology.org/ontology/uco/types#")
 NS_UCO_VOCABULARY = rdflib.Namespace("https://unifiedcyberontology.org/ontology/uco/vocabulary#")
 NS_XSD = rdflib.namespace.XSD
+
+# DEPRECATED namespaces: These namespaces were implemented for CASE/UCO requirements review, and are not guaranteed to remain in this code base.
+NS_GEO = rdflib.Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
+NS_GSP = rdflib.Namespace("http://www.opengis.net/ont/geosparql#")
+NS_LOCN = rdflib.Namespace("http://www.w3.org/ns/locn#")
+NS_SCHEMA = rdflib.Namespace("http://schema.org/")
+NS_SF = rdflib.Namespace("http://www.opengis.net/ont/sf#")
+
+RX_COMPOSITE_GPSPOSITION = re.compile(r"^-?\d+(.\d+)? -?\d+(.\d+)?$")
 
 argument_parser = argparse.ArgumentParser(epilog=__doc__)
 argument_parser.add_argument("--base-prefix", default="http://example.org/kb/")
@@ -139,7 +149,10 @@ class ExifToolRDFMapper(object):
         self._n_exif_facet = None
         self._n_file_facet = None
         self._n_location_object = None
+        self._n_location_object_geo_point = None
         self._n_location_object_latlong_facet = None
+        self._n_location_object_schema_geo_coordinates = None
+        self._n_location_object_sf_point = None
         self._n_observable_object = None
         self._n_raster_picture_facet = None
         self._n_relationship_object_location = None
@@ -185,27 +198,60 @@ class ExifToolRDFMapper(object):
             ))
         elif exiftool_iri == "http://ns.exiftool.ca/Composite/1.0/GPSAltitude":
             (v_raw, v_printconv) = self.pop_iri(exiftool_iri)
-            l_altitude = rdflib.Literal(v_raw.toPython(), datatype=NS_XSD.decimal)
+            l_altitude_decimal = rdflib.Literal(v_raw.toPython(), datatype=NS_XSD.decimal)
+            l_altitude_str = rdflib.Literal(v_raw.toPython())
             self.graph.add((
               self.n_location_object_latlong_facet,
               NS_UCO_LOCATION.altitude,
-              l_altitude
+              l_altitude_decimal
+            ))
+            self.graph.add((
+              self.n_location_object_schema_geo_coordinates,
+              NS_SCHEMA.elevation,
+              l_altitude_str
+            ))
+            self.graph.add((
+              self.n_location_object_geo_point,
+              NS_GEO.alt,
+              l_altitude_str
             ))
         elif exiftool_iri == "http://ns.exiftool.ca/Composite/1.0/GPSLatitude":
             (v_raw, v_printconv) = self.pop_iri(exiftool_iri)
-            l_latitude = rdflib.Literal(v_raw.toPython(), datatype=NS_XSD.decimal)
+            l_latitude_decimal = rdflib.Literal(v_raw.toPython(), datatype=NS_XSD.decimal)
+            l_latitude_str = rdflib.Literal(v_raw.toPython())
             self.graph.add((
               self.n_location_object_latlong_facet,
               NS_UCO_LOCATION.latitude,
-              l_latitude
+              l_latitude_decimal
+            ))
+            self.graph.add((
+              self.n_location_object_schema_geo_coordinates,
+              NS_SCHEMA.latitude,
+              l_latitude_str
+            ))
+            self.graph.add((
+              self.n_location_object_geo_point,
+              NS_GEO.lat,
+              l_latitude_str
             ))
         elif exiftool_iri == "http://ns.exiftool.ca/Composite/1.0/GPSLongitude":
             (v_raw, v_printconv) = self.pop_iri(exiftool_iri)
-            l_longitude = rdflib.Literal(v_raw.toPython(), datatype=NS_XSD.decimal)
+            l_longitude_decimal = rdflib.Literal(v_raw.toPython(), datatype=NS_XSD.decimal)
+            l_longitude_str = rdflib.Literal(v_raw.toPython())
             self.graph.add((
               self.n_location_object_latlong_facet,
               NS_UCO_LOCATION.longitude,
-              l_longitude
+              l_longitude_decimal
+            ))
+            self.graph.add((
+              self.n_location_object_schema_geo_coordinates,
+              NS_SCHEMA.longitude,
+              l_longitude_str
+            ))
+            self.graph.add((
+              self.n_location_object_geo_point,
+              NS_GEO.long,
+              l_longitude_str
             ))
         elif exiftool_iri == "http://ns.exiftool.ca/Composite/1.0/GPSPosition":
             (v_raw, v_printconv) = self.pop_iri(exiftool_iri)
@@ -214,6 +260,38 @@ class ExifToolRDFMapper(object):
               NS_RDFS.label,
               v_printconv
             ))
+            # position_str has the assumed format of the latitude and longitude in decimal form separated by a single space.
+            position_str = v_raw.toPython()
+            maybe_match = RX_COMPOSITE_GPSPOSITION.search(position_str)
+            if maybe_match is None:
+                _logger.warning("Unexpected format of Composite GPSPosition: %r.", position_str)
+            else:
+                self.graph.add((
+                  self.n_location_object_sf_point,
+                  NS_GSP.asWKT,
+                  rdflib.Literal(
+                    "<http://www.opengis.net/def/crs/OGC/1.3/CRS84> Point(%s)" % position_str,
+                    datatype=NS_GSP.wktLiteral
+                  )
+                ))
+                self.graph.add((
+                  self.n_location_object_sf_point,
+                  NS_GSP.asGML,
+                  rdflib.Literal(
+                """\
+<gml:Point srsName='http://www.opengis.net/def/crs/OGC/1.3/CRS84'>\
+<gml:coordinates>%s</gml:coordinates>\
+</gml:Point>\
+""" % (position_str.replace(" ", ", ")),
+                    datatype=NS_GSP.gmlLiteral
+                  )
+                ))
+                # This option requires better syntax management.  Turtle serialization goes awry.
+                #self.graph.add((
+                #  self.n_location_object,
+                #  NS_LOCN.geometry,
+                #  NS_GEO["%s;u=0;crs=wgs84" % (position_str.replace(" ", ","))]
+                #))
         elif exiftool_iri in {
           "http://ns.exiftool.ca/EXIF/GPS/1.0/GPSAltitudeRef",
           "http://ns.exiftool.ca/EXIF/GPS/1.0/GPSAltitude",
@@ -503,6 +581,48 @@ WHERE {
         return self._n_location_object
 
     @property
+    def n_location_object_geo_point(self):
+        """
+        Initialized on first access.
+
+        DEPRECATED.  This property was implemented for CASE/UCO requirements review, and is not guaranteed to remain in this code base.
+        """
+        if self._n_location_object_geo_point is None:
+            self._n_location_object_geo_point = rdflib.BNode()
+            self.graph.add((
+              self._n_location_object_geo_point,
+              NS_RDF.type,
+              NS_GEO.Point
+            ))
+            self.graph.add((
+              self.n_location_object,
+              NS_LOCN.geometry,
+              self._n_location_object_geo_point
+            ))
+        return self._n_location_object_geo_point
+
+    @property
+    def n_location_object_schema_geo_coordinates(self):
+        """
+        Initialized on first access.
+
+        DEPRECATED.  This property was implemented for CASE/UCO requirements review, and is not guaranteed to remain in this code base.
+        """
+        if self._n_location_object_schema_geo_coordinates is None:
+            self._n_location_object_schema_geo_coordinates = rdflib.BNode()
+            self.graph.add((
+              self._n_location_object_schema_geo_coordinates,
+              NS_RDF.type,
+              NS_SCHEMA.GeoCoordinates
+            ))
+            self.graph.add((
+              self.n_location_object,
+              NS_LOCN.geometry,
+              self._n_location_object_schema_geo_coordinates
+            ))
+        return self._n_location_object_schema_geo_coordinates
+
+    @property
     def n_location_object_latlong_facet(self):
         """
         Initialized on first access.
@@ -520,6 +640,27 @@ WHERE {
               self._n_location_object_latlong_facet
             ))
         return self._n_location_object_latlong_facet
+
+    @property
+    def n_location_object_sf_point(self):
+        """
+        Initialized on first access.
+
+        DEPRECATED.  This property was implemented for CASE/UCO requirements review, and is not guaranteed to remain in this code base.
+        """
+        if self._n_location_object_sf_point is None:
+            self._n_location_object_sf_point = rdflib.BNode()
+            self.graph.add((
+              self._n_location_object_sf_point,
+              NS_RDF.type,
+              NS_SF.Point
+            ))
+            self.graph.add((
+              self.n_location_object,
+              NS_LOCN.geometry,
+              self._n_location_object_sf_point
+            ))
+        return self._n_location_object_sf_point
 
     @property
     def n_observable_object(self):
@@ -625,7 +766,12 @@ def main():
     out_graph.namespace_manager.bind("exiftool-PreviewIFD", NS_EXIFTOOL_PREVIEWIFD)
     out_graph.namespace_manager.bind("exiftool-InteropIFD", NS_EXIFTOOL_INTEROPIFD)
     out_graph.namespace_manager.bind("exiftool-IFD1", NS_EXIFTOOL_IFD1)
+    out_graph.namespace_manager.bind("geo", NS_GEO)
+    out_graph.namespace_manager.bind("gsp", NS_GSP)
     out_graph.namespace_manager.bind("kb", NS_BASE)
+    out_graph.namespace_manager.bind("locn", NS_LOCN)
+    out_graph.namespace_manager.bind("schema", NS_SCHEMA)
+    out_graph.namespace_manager.bind("sf", NS_SF)
     out_graph.namespace_manager.bind("uco-core", NS_UCO_CORE)
     out_graph.namespace_manager.bind("uco-location", NS_UCO_LOCATION)
     out_graph.namespace_manager.bind("uco-observable", NS_UCO_OBSERVABLE)

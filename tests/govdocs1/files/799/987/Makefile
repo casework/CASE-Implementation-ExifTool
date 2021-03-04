@@ -124,7 +124,7 @@ undefined_vocabulary.txt: \
 	    $< \
 	    > $@___
 	grep ':' $@___ \
-	  | egrep -v '(ns.exiftool.ca|w3.org)' \
+	  | egrep -v '(ns.exiftool.ca|opengis.net|schema.org|w3.org)' \
 	    | grep -v '/kb/' \
 	      > $@__
 	rm $@___

@@ -10,10 +10,15 @@
 @prefix exiftool-PreviewIFD: <http://ns.exiftool.ca/MakerNotes/PreviewIFD/1.0/> .
 @prefix exiftool-System: <http://ns.exiftool.ca/File/System/1.0/> .
 @prefix exiftool-et: <http://ns.exiftool.ca/1.0/> .
+@prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix gsp: <http://www.opengis.net/ont/geosparql#> .
 @prefix kb: <http://example.org/kb/> .
+@prefix locn: <http://www.w3.org/ns/locn#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <http://schema.org/> .
+@prefix sf: <http://www.opengis.net/ont/sf#> .
 @prefix uco-core: <https://unifiedcyberontology.org/ontology/uco/core#> .
 @prefix uco-location: <https://unifiedcyberontology.org/ontology/uco/location#> .
 @prefix uco-observable: <https://unifiedcyberontology.org/ontology/uco/observable#> .
@@ -33,6 +38,25 @@ kb:device-dcad5d4a-e808-5967-bda2-19bffa8c2b52
 kb:location-e49850a6-8b3e-5b9b-bc6a-0d003dd23c95
 	a uco-location:Location ;
 	rdfs:label "30 deg 18' 19.80\" N, 89 deg 19' 3.00\" W" ;
+	locn:geometry
+		[
+			a schema:GeoCoordinates ;
+			schema:elevation "151" ;
+			schema:latitude "30.3055" ;
+			schema:longitude "-89.3175" ;
+		] ,
+		[
+			a sf:Point ;
+			gsp:asGML "<gml:Point srsName='http://www.opengis.net/def/crs/OGC/1.3/CRS84'><gml:coordinates>30.3055, -89.3175</gml:coordinates></gml:Point>"^^gsp:gmlLiteral ;
+			gsp:asWKT "<http://www.opengis.net/def/crs/OGC/1.3/CRS84> Point(30.3055 -89.3175)"^^gsp:wktLiteral ;
+		] ,
+		[
+			a geo:Point ;
+			geo:alt "151" ;
+			geo:lat "30.3055" ;
+			geo:long "-89.3175" ;
+		]
+		;
 	uco-core:facets [
 		a uco-location:LatLongCoordinates ;
 		uco-location:altitude "151.0"^^xsd:decimal ;
