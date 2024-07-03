@@ -9,12 +9,89 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix uco-core: <https://ontology.unifiedcyberontology.org/uco/core/> .
 @prefix uco-observable: <https://ontology.unifiedcyberontology.org/uco/observable/> .
+@prefix uco-types: <https://ontology.unifiedcyberontology.org/uco/types/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 kb:ContentDataFacet-c43d5237-b3f7-51d8-a7d6-ac412b476a39
 	a uco-observable:ContentDataFacet ;
 	uco-observable:mimeType "application/pdf" ;
 	uco-observable:sizeInBytes "55964"^^xsd:integer ;
+	.
+
+kb:ControlledDictionary-0a0b2f35-20de-5bb7-a993-55740c68f7ca
+	a uco-types:ControlledDictionary ;
+	uco-types:entry
+		kb:ControlledDictionaryEntry-01dfe8b3-1e16-5f73-bb94-b918fa730543 ,
+		kb:ControlledDictionaryEntry-0f02787f-3e37-5594-a993-8208a52099d8 ,
+		kb:ControlledDictionaryEntry-49831587-5558-5b66-a220-7039f36edd4c ,
+		kb:ControlledDictionaryEntry-62910360-2495-554b-9096-5f363677d67e ,
+		kb:ControlledDictionaryEntry-6a80cc5e-e41f-55e8-864c-470a1575f5a4 ,
+		kb:ControlledDictionaryEntry-8789fd16-8606-576b-8e00-ee2e9f6056d7 ,
+		kb:ControlledDictionaryEntry-ae07f7b8-b25e-5117-8f8a-cab8b6498c19 ,
+		kb:ControlledDictionaryEntry-d9c7584f-ba6e-5635-ba66-340ff3a15b26 ,
+		kb:ControlledDictionaryEntry-df02edd9-5048-5776-a85f-d363a44ae14c ,
+		kb:ControlledDictionaryEntry-f8db854f-ad65-565c-b731-e17283b91b22
+		;
+	.
+
+kb:ControlledDictionaryEntry-01dfe8b3-1e16-5f73-bb94-b918fa730543
+	a uco-types:ControlledDictionaryEntry ;
+	uco-types:key "Subject" ;
+	uco-types:value "Extracted Pages" ;
+	.
+
+kb:ControlledDictionaryEntry-0f02787f-3e37-5594-a993-8208a52099d8
+	a uco-types:ControlledDictionaryEntry ;
+	uco-types:key "PageCount" ;
+	uco-types:value "2" ;
+	.
+
+kb:ControlledDictionaryEntry-49831587-5558-5b66-a220-7039f36edd4c
+	a uco-types:ControlledDictionaryEntry ;
+	uco-types:key "Creator" ;
+	uco-types:value "ACOMP.exe   WinVer 1b43  jul 14 2003" ;
+	.
+
+kb:ControlledDictionaryEntry-62910360-2495-554b-9096-5f363677d67e
+	a uco-types:ControlledDictionaryEntry ;
+	uco-types:key "Author" ;
+	uco-types:value "U.S. Government Printing Office" ;
+	.
+
+kb:ControlledDictionaryEntry-6a80cc5e-e41f-55e8-864c-470a1575f5a4
+	a uco-types:ControlledDictionaryEntry ;
+	uco-types:key "Producer" ;
+	uco-types:value "Acrobat Distiller 4.0 for Windows" ;
+	.
+
+kb:ControlledDictionaryEntry-8789fd16-8606-576b-8e00-ee2e9f6056d7
+	a uco-types:ControlledDictionaryEntry ;
+	uco-types:key "ModDate" ;
+	uco-types:value "2005:05:25 02:23:55" ;
+	.
+
+kb:ControlledDictionaryEntry-ae07f7b8-b25e-5117-8f8a-cab8b6498c19
+	a uco-types:ControlledDictionaryEntry ;
+	uco-types:key "CreationDate" ;
+	uco-types:value "2005:05:25 02:23:55" ;
+	.
+
+kb:ControlledDictionaryEntry-d9c7584f-ba6e-5635-ba66-340ff3a15b26
+	a uco-types:ControlledDictionaryEntry ;
+	uco-types:key "Title" ;
+	uco-types:value "Document" ;
+	.
+
+kb:ControlledDictionaryEntry-df02edd9-5048-5776-a85f-d363a44ae14c
+	a uco-types:ControlledDictionaryEntry ;
+	uco-types:key "Linearized" ;
+	uco-types:value "false" ;
+	.
+
+kb:ControlledDictionaryEntry-f8db854f-ad65-565c-b731-e17283b91b22
+	a uco-types:ControlledDictionaryEntry ;
+	uco-types:key "PDFVersion" ;
+	uco-types:value "1.5" ;
 	.
 
 kb:File-69728535-c7b0-548c-a7ac-46116019f793
@@ -55,6 +132,7 @@ kb:PDFFileFacet-b8927948-bdae-58e6-b6cd-41841eafe1b2
 	drafting:pdfProducer "Acrobat Distiller 4.0 for Windows" ;
 	drafting:pdfSubject "Extracted Pages" ;
 	drafting:pdfTitle "Document" ;
+	uco-observable:documentInformationDictionary kb:ControlledDictionary-0a0b2f35-20de-5bb7-a993-55740c68f7ca ;
 	uco-observable:pdfCreationDate "2005-01-01T02:23:55"^^xsd:dateTime ;
 	uco-observable:pdfModDate "2005-01-01T02:23:55"^^xsd:dateTime ;
 	uco-observable:version "1.5" ;

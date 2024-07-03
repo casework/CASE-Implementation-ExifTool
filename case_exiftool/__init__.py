@@ -163,6 +163,11 @@ class ExifToolRDFMapper(object):
         self._exif_dictionary_dict: typing.Optional[
             typing.Dict[str, rdflib.Literal]
         ] = None
+
+        self._pdf_dictionary_dict: typing.Optional[typing.Dict[str, rdflib.Literal]] = (
+            None
+        )
+
         self._graph = graph
 
         self._use_deterministic_uuids = use_deterministic_uuids
@@ -177,6 +182,7 @@ class ExifToolRDFMapper(object):
         self._n_exif_facet: typing.Optional[rdflib.URIRef] = None
         self._n_file_facet: typing.Optional[rdflib.URIRef] = None
         self._n_location_object: typing.Optional[rdflib.URIRef] = None
+        self._n_pdf_dictionary_object: typing.Optional[rdflib.URIRef] = None
         self._n_pdf_file_facet: typing.Optional[rdflib.URIRef] = None
         self._n_location_object_latlong_facet: typing.Optional[rdflib.URIRef] = None
         self._n_observable_object: typing.Optional[rdflib.URIRef] = None
@@ -375,6 +381,7 @@ class ExifToolRDFMapper(object):
         elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/Author":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["Author"] = v_raw
                 self.graph.add(
                     (
                         self.n_pdf_file_facet,
@@ -385,6 +392,8 @@ class ExifToolRDFMapper(object):
         elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/CreateDate":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
+                # CreationDate entry in self.pdf_dictionary_dict references term in ISO 32000-1:2008 PDF Table 317.
+                self.pdf_dictionary_dict["CreationDate"] = v_raw
                 self.graph.add(
                     (
                         self.n_pdf_file_facet,
@@ -397,6 +406,7 @@ class ExifToolRDFMapper(object):
         elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/Creator":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["Creator"] = v_raw
                 self.graph.add(
                     (
                         self.n_pdf_file_facet,
@@ -407,6 +417,7 @@ class ExifToolRDFMapper(object):
         elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/Linearized":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["Linearized"] = v_raw
                 self.graph.add(
                     (
                         self.n_pdf_file_facet,
@@ -417,6 +428,7 @@ class ExifToolRDFMapper(object):
         elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/ModifyDate":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["ModDate"] = v_raw
                 self.graph.add(
                     (
                         self.n_pdf_file_facet,
@@ -429,6 +441,7 @@ class ExifToolRDFMapper(object):
         elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/PDFVersion":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["PDFVersion"] = v_raw
                 self.graph.add(
                     (
                         self.n_pdf_file_facet,
@@ -439,6 +452,7 @@ class ExifToolRDFMapper(object):
         elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/PageCount":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["PageCount"] = v_raw
                 self.graph.add(
                     (
                         self.n_pdf_file_facet,
@@ -449,6 +463,7 @@ class ExifToolRDFMapper(object):
         elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/Producer":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["Producer"] = v_raw
                 self.graph.add(
                     (
                         self.n_pdf_file_facet,
@@ -459,6 +474,7 @@ class ExifToolRDFMapper(object):
         elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/Subject":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["Subject"] = v_raw
                 self.graph.add(
                     (
                         self.n_pdf_file_facet,
@@ -469,6 +485,7 @@ class ExifToolRDFMapper(object):
         elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/Title":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["Title"] = v_raw
                 self.graph.add(
                     (
                         self.n_pdf_file_facet,
@@ -559,6 +576,8 @@ class ExifToolRDFMapper(object):
         # Derive remaining objects.
         if self._exif_dictionary_dict is not None:
             _ = self.n_exif_dictionary_object
+        if self._pdf_dictionary_dict is not None:
+            _ = self.n_pdf_dictionary_object
         if self._n_location_object is not None:
             _ = self.n_relationship_object_location
 
@@ -595,6 +614,16 @@ class ExifToolRDFMapper(object):
         if self._exif_dictionary_dict is None:
             self._exif_dictionary_dict = dict()
         return self._exif_dictionary_dict
+
+    @property
+    def pdf_dictionary_dict(self) -> typing.Dict[str, rdflib.Literal]:
+        """
+        Initialized on first access.
+        Controlled dictionary keys reference terms from ISO 32000-1:2008 PDF Table 317 and ExifTool Tag Names.
+        """
+        if self._pdf_dictionary_dict is None:
+            self._pdf_dictionary_dict = dict()
+        return self._pdf_dictionary_dict
 
     @property
     def graph(self) -> rdflib.Graph:
@@ -982,6 +1011,24 @@ class ExifToolRDFMapper(object):
                 (self.n_observable_object, NS_UCO_CORE.hasFacet, self._n_pdf_file_facet)
             )
         return self._n_pdf_file_facet
+
+    @property
+    def n_pdf_dictionary_object(self) -> rdflib.URIRef:
+        """
+        Initialized on first access.
+        """
+        if self._n_pdf_dictionary_object is None:
+            self._n_pdf_dictionary_object = controlled_dictionary_object_to_node(
+                self.graph, self.ns_base, self.pdf_dictionary_dict
+            )
+            self.graph.add(
+                (
+                    self.n_pdf_file_facet,
+                    NS_UCO_OBSERVABLE.documentInformationDictionary,
+                    self._n_pdf_dictionary_object,
+                )
+            )
+        return self._n_pdf_dictionary_object
 
     @property
     def use_deterministic_uuids(self) -> bool:

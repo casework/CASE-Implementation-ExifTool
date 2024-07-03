@@ -10,6 +10,7 @@
         "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
         "uco-core": "https://ontology.unifiedcyberontology.org/uco/core/",
         "uco-observable": "https://ontology.unifiedcyberontology.org/uco/observable/",
+        "uco-types": "https://ontology.unifiedcyberontology.org/uco/types/",
         "xsd": "http://www.w3.org/2001/XMLSchema#"
     },
     "@graph": [
@@ -21,6 +22,102 @@
                 "@type": "xsd:integer",
                 "@value": "55964"
             }
+        },
+        {
+            "@id": "kb:ControlledDictionary-0a0b2f35-20de-5bb7-a993-55740c68f7ca",
+            "@type": "uco-types:ControlledDictionary",
+            "uco-types:entry": [
+                {
+                    "@id": "kb:ControlledDictionaryEntry-01dfe8b3-1e16-5f73-bb94-b918fa730543"
+                },
+                {
+                    "@id": "kb:ControlledDictionaryEntry-0f02787f-3e37-5594-a993-8208a52099d8"
+                },
+                {
+                    "@id": "kb:ControlledDictionaryEntry-49831587-5558-5b66-a220-7039f36edd4c"
+                },
+                {
+                    "@id": "kb:ControlledDictionaryEntry-62910360-2495-554b-9096-5f363677d67e"
+                },
+                {
+                    "@id": "kb:ControlledDictionaryEntry-6a80cc5e-e41f-55e8-864c-470a1575f5a4"
+                },
+                {
+                    "@id": "kb:ControlledDictionaryEntry-8789fd16-8606-576b-8e00-ee2e9f6056d7"
+                },
+                {
+                    "@id": "kb:ControlledDictionaryEntry-ae07f7b8-b25e-5117-8f8a-cab8b6498c19"
+                },
+                {
+                    "@id": "kb:ControlledDictionaryEntry-d9c7584f-ba6e-5635-ba66-340ff3a15b26"
+                },
+                {
+                    "@id": "kb:ControlledDictionaryEntry-df02edd9-5048-5776-a85f-d363a44ae14c"
+                },
+                {
+                    "@id": "kb:ControlledDictionaryEntry-f8db854f-ad65-565c-b731-e17283b91b22"
+                }
+            ]
+        },
+        {
+            "@id": "kb:ControlledDictionaryEntry-01dfe8b3-1e16-5f73-bb94-b918fa730543",
+            "@type": "uco-types:ControlledDictionaryEntry",
+            "uco-types:key": "Subject",
+            "uco-types:value": "Extracted Pages"
+        },
+        {
+            "@id": "kb:ControlledDictionaryEntry-0f02787f-3e37-5594-a993-8208a52099d8",
+            "@type": "uco-types:ControlledDictionaryEntry",
+            "uco-types:key": "PageCount",
+            "uco-types:value": "2"
+        },
+        {
+            "@id": "kb:ControlledDictionaryEntry-49831587-5558-5b66-a220-7039f36edd4c",
+            "@type": "uco-types:ControlledDictionaryEntry",
+            "uco-types:key": "Creator",
+            "uco-types:value": "ACOMP.exe   WinVer 1b43  jul 14 2003"
+        },
+        {
+            "@id": "kb:ControlledDictionaryEntry-62910360-2495-554b-9096-5f363677d67e",
+            "@type": "uco-types:ControlledDictionaryEntry",
+            "uco-types:key": "Author",
+            "uco-types:value": "U.S. Government Printing Office"
+        },
+        {
+            "@id": "kb:ControlledDictionaryEntry-6a80cc5e-e41f-55e8-864c-470a1575f5a4",
+            "@type": "uco-types:ControlledDictionaryEntry",
+            "uco-types:key": "Producer",
+            "uco-types:value": "Acrobat Distiller 4.0 for Windows"
+        },
+        {
+            "@id": "kb:ControlledDictionaryEntry-8789fd16-8606-576b-8e00-ee2e9f6056d7",
+            "@type": "uco-types:ControlledDictionaryEntry",
+            "uco-types:key": "ModDate",
+            "uco-types:value": "2005:05:25 02:23:55"
+        },
+        {
+            "@id": "kb:ControlledDictionaryEntry-ae07f7b8-b25e-5117-8f8a-cab8b6498c19",
+            "@type": "uco-types:ControlledDictionaryEntry",
+            "uco-types:key": "CreationDate",
+            "uco-types:value": "2005:05:25 02:23:55"
+        },
+        {
+            "@id": "kb:ControlledDictionaryEntry-d9c7584f-ba6e-5635-ba66-340ff3a15b26",
+            "@type": "uco-types:ControlledDictionaryEntry",
+            "uco-types:key": "Title",
+            "uco-types:value": "Document"
+        },
+        {
+            "@id": "kb:ControlledDictionaryEntry-df02edd9-5048-5776-a85f-d363a44ae14c",
+            "@type": "uco-types:ControlledDictionaryEntry",
+            "uco-types:key": "Linearized",
+            "uco-types:value": "false"
+        },
+        {
+            "@id": "kb:ControlledDictionaryEntry-f8db854f-ad65-565c-b731-e17283b91b22",
+            "@type": "uco-types:ControlledDictionaryEntry",
+            "uco-types:key": "PDFVersion",
+            "uco-types:value": "1.5"
         },
         {
             "@id": "kb:File-69728535-c7b0-548c-a7ac-46116019f793",
@@ -78,6 +175,9 @@
             "drafting:pdfProducer": "Acrobat Distiller 4.0 for Windows",
             "drafting:pdfSubject": "Extracted Pages",
             "drafting:pdfTitle": "Document",
+            "uco-observable:documentInformationDictionary": {
+                "@id": "kb:ControlledDictionary-0a0b2f35-20de-5bb7-a993-55740c68f7ca"
+            },
             "uco-observable:pdfCreationDate": {
                 "@type": "xsd:dateTime",
                 "@value": "2005-01-01T02:23:55"
