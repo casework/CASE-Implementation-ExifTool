@@ -117,10 +117,10 @@ kb:File-69728535-c7b0-548c-a7ac-46116019f793
 
 kb:FileFacet-7beb203d-a342-5463-bb71-73b8d593fbde
 	a uco-observable:FileFacet ;
-	uco-observable:accessedTime "2024-01-01T17:34:31-04:00"^^xsd:dateTime ;
+	uco-observable:accessedTime "2024-06-13T17:34:31-04:00"^^xsd:dateTime ;
 	uco-observable:fileName "000015.pdf" ;
-	uco-observable:metadataChangeTime "2024-01-01T17:32:40-04:00"^^xsd:dateTime ;
-	uco-observable:modifiedTime "2024-01-01T17:32:40-04:00"^^xsd:dateTime ;
+	uco-observable:metadataChangeTime "2024-06-13T17:32:40-04:00"^^xsd:dateTime ;
+	uco-observable:modifiedTime "2024-06-13T17:32:40-04:00"^^xsd:dateTime ;
 	.
 
 kb:PDFFileFacet-b8927948-bdae-58e6-b6cd-41841eafe1b2
@@ -133,8 +133,8 @@ kb:PDFFileFacet-b8927948-bdae-58e6-b6cd-41841eafe1b2
 	drafting:pdfSubject "Extracted Pages" ;
 	drafting:pdfTitle "Document" ;
 	uco-observable:documentInformationDictionary kb:ControlledDictionary-0a0b2f35-20de-5bb7-a993-55740c68f7ca ;
-	uco-observable:pdfCreationDate "2005-01-01T02:23:55"^^xsd:dateTime ;
-	uco-observable:pdfModDate "2005-01-01T02:23:55"^^xsd:dateTime ;
+	uco-observable:pdfCreationDate "2005-05-25T02:23:55"^^xsd:dateTime ;
+	uco-observable:pdfModDate "2005-05-25T02:23:55"^^xsd:dateTime ;
 	uco-observable:version "1.5" ;
 	.
 
