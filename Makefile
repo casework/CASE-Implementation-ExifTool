@@ -19,6 +19,7 @@ all: \
   .venv-pre-commit/var/.pre-commit-built.log
 
 .PHONY: \
+  check-mypy \
   check-supply-chain \
   check-supply-chain-pre-commit \
   download
@@ -59,14 +60,22 @@ all: \
 	touch $@
 
 check: \
-  .git_submodule_init.done.log \
-  .venv-pre-commit/var/.pre-commit-built.log
+  .venv-pre-commit/var/.pre-commit-built.log \
+  check-mypy
 	$(MAKE) \
 	  --directory tests \
 	  check
 
+check-mypy: \
+  .git_submodule_init.done.log
+	$(MAKE) \
+	  PYTHON3=python3 \
+	  --directory tests \
+	  check-mypy
+
 # This target's dependencies potentially modify the working directory's Git state, so it is intentionally not a dependency of check.
 check-supply-chain: \
+  check-mypy \
   check-supply-chain-pre-commit
 
 # This target is scheduled to run as part of prerelease review.
