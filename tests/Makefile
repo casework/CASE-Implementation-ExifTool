@@ -24,6 +24,7 @@ all: \
 
 .PHONY: \
   check-mypy \
+  check-pytest \
   download
 
 .venv.done.log: \
@@ -46,7 +47,8 @@ all: \
 	touch $@
 
 check: \
-  check-mypy
+  check-mypy \
+  check-pytest
 	$(MAKE) \
 	  --directory govdocs1 \
 	  check
@@ -58,6 +60,14 @@ check-mypy: \
 	    --strict \
 	    $(top_srcdir)/case_exiftool \
 	    .
+
+check-pytest: \
+  .venv.done.log
+	source venv/bin/activate \
+	  && pytest \
+	    --doctest-modules \
+	    --log-level=DEBUG \
+	    $(top_srcdir)/case_exiftool
 
 clean:
 	@rm -f \
