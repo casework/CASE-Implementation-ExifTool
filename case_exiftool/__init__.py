@@ -134,6 +134,49 @@ def manufacturer_name_to_node(
     return n_manufacturer
 
 
+def maybe_cast_timestamp(l_value: rdflib.Literal) -> typing.Optional[rdflib.Literal]:
+    """
+    This function attempts some conversion of timestamp strings.
+
+    >>> import rdflib
+    >>> l_timestamp_0 = rdflib.Literal("2020-01-02 03:04:05-05:00")
+    >>> maybe_cast_timestamp(l_timestamp_0)
+    rdflib.term.Literal('2020-01-02T03:04:05-05:00', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#dateTime'))
+    >>> l_timestamp_1 = rdflib.Literal("2020-01-02T03:04:05-05:00", datatype=rdflib.XSD.string)
+    >>> maybe_cast_timestamp(l_timestamp_1)
+    rdflib.term.Literal('2020-01-02T03:04:05-05:00', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#dateTime'))
+    >>> assert maybe_cast_timestamp(l_timestamp_0) == maybe_cast_timestamp(l_timestamp_1)
+    >>> # Note: Colons are used in this sample instead of dashes for year-month-day delimiting.
+    >>> l_timestamp_2 = rdflib.Literal("2020:01:02T03:04:05-05:00")
+    >>> maybe_cast_timestamp(l_timestamp_2)
+    rdflib.term.Literal('2020-01-02T03:04:05-05:00', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#dateTime'))
+    >>> l_timestamp_3 = rdflib.Literal("Thu Jan  2 03:04:05 EST 2020", datatype=rdflib.XSD.string)
+    >>> maybe_cast_timestamp(l_timestamp_3)
+    """
+    if l_value.datatype == NS_XSD.dateTime:
+        return l_value
+    elif l_value.datatype != NS_XSD.string and l_value.datatype is not None:
+        raise NotImplementedError(l_value)
+    s_value = str(l_value)
+    if s_value[4] != "-":
+        maybe_year = s_value[0:4]
+        if not maybe_year.isnumeric():
+            return None
+        s_value = "".join(
+            [
+                maybe_year,
+                "-",
+                s_value[5:7],
+                "-",
+                s_value[8:],
+            ]
+        )
+    try:
+        return rdflib.Literal(s_value.replace(" ", "T"), datatype=NS_XSD.dateTime)
+    except ValueError:
+        return None
+
+
 class ExifToolRDFMapper(object):
     """
     This class maps ExifTool RDF predicates into UCO objects and Facets.
@@ -312,41 +355,41 @@ class ExifToolRDFMapper(object):
         elif exiftool_iri == "http://ns.exiftool.org/File/System/1.0/FileAccessDate":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
-                self.graph.add(
-                    (
-                        self.n_file_facet,
-                        NS_UCO_OBSERVABLE.accessedTime,
-                        rdflib.Literal(
-                            v_raw.toPython().replace(" ", "T"), datatype=NS_XSD.dateTime
-                        ),
+                maybe_l_timestamp = maybe_cast_timestamp(v_raw)
+                if maybe_l_timestamp is not None:
+                    self.graph.add(
+                        (
+                            self.n_file_facet,
+                            NS_UCO_OBSERVABLE.accessedTime,
+                            maybe_l_timestamp,
+                        )
                     )
-                )
         elif (
             exiftool_iri == "http://ns.exiftool.org/File/System/1.0/FileInodeChangeDate"
         ):
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
-                self.graph.add(
-                    (
-                        self.n_file_facet,
-                        NS_UCO_OBSERVABLE.metadataChangeTime,
-                        rdflib.Literal(
-                            v_raw.toPython().replace(" ", "T"), datatype=NS_XSD.dateTime
-                        ),
+                maybe_l_timestamp = maybe_cast_timestamp(v_raw)
+                if maybe_l_timestamp is not None:
+                    self.graph.add(
+                        (
+                            self.n_file_facet,
+                            NS_UCO_OBSERVABLE.metadataChangeTime,
+                            maybe_l_timestamp,
+                        )
                     )
-                )
         elif exiftool_iri == "http://ns.exiftool.org/File/System/1.0/FileModifyDate":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
-                self.graph.add(
-                    (
-                        self.n_file_facet,
-                        NS_UCO_OBSERVABLE.modifiedTime,
-                        rdflib.Literal(
-                            v_raw.toPython().replace(" ", "T"), datatype=NS_XSD.dateTime
-                        ),
+                maybe_l_timestamp = maybe_cast_timestamp(v_raw)
+                if maybe_l_timestamp is not None:
+                    self.graph.add(
+                        (
+                            self.n_file_facet,
+                            NS_UCO_OBSERVABLE.modifiedTime,
+                            maybe_l_timestamp,
+                        )
                     )
-                )
         elif exiftool_iri == "http://ns.exiftool.org/File/System/1.0/FileName":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
@@ -394,15 +437,15 @@ class ExifToolRDFMapper(object):
             if isinstance(v_raw, rdflib.Literal):
                 # CreationDate entry in self.pdf_dictionary_dict references term in ISO 32000-1:2008 PDF Table 317.
                 self.pdf_dictionary_dict["CreationDate"] = v_raw
-                self.graph.add(
-                    (
-                        self.n_pdf_file_facet,
-                        NS_UCO_OBSERVABLE.pdfCreationDate,
-                        rdflib.Literal(
-                            v_raw.toPython().replace(" ", "T"), datatype=NS_XSD.dateTime
-                        ),
+                maybe_l_timestamp = maybe_cast_timestamp(v_raw)
+                if maybe_l_timestamp is not None:
+                    self.graph.add(
+                        (
+                            self.n_pdf_file_facet,
+                            NS_UCO_OBSERVABLE.pdfCreationDate,
+                            maybe_l_timestamp,
+                        )
                     )
-                )
         elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/Creator":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
@@ -429,15 +472,15 @@ class ExifToolRDFMapper(object):
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
                 self.pdf_dictionary_dict["ModDate"] = v_raw
-                self.graph.add(
-                    (
-                        self.n_pdf_file_facet,
-                        NS_UCO_OBSERVABLE.pdfModDate,
-                        rdflib.Literal(
-                            v_raw.toPython().replace(" ", "T"), datatype=NS_XSD.dateTime
-                        ),
+                maybe_l_timestamp = maybe_cast_timestamp(v_raw)
+                if maybe_l_timestamp is not None:
+                    self.graph.add(
+                        (
+                            self.n_pdf_file_facet,
+                            NS_UCO_OBSERVABLE.pdfModDate,
+                            maybe_l_timestamp,
+                        )
                     )
-                )
         elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/PDFVersion":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
