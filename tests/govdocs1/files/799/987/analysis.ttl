@@ -473,10 +473,10 @@ kb:File-cf56e1ee-1343-5dd5-ae7e-f5aa3d7a39cb
 
 kb:FileFacet-f6087c69-499f-5c09-8ce7-d485ac378d73
 	a uco-observable:FileFacet ;
-	uco-observable:accessedTime "2020-01-01T21:50:06-05:00"^^xsd:dateTime ;
+	uco-observable:accessedTime "2020-12-01T21:50:06-05:00"^^xsd:dateTime ;
 	uco-observable:fileName "799987.jpg" ;
-	uco-observable:metadataChangeTime "2020-01-01T21:50:06-05:00"^^xsd:dateTime ;
-	uco-observable:modifiedTime "2005-01-01T12:58:00-04:00"^^xsd:dateTime ;
+	uco-observable:metadataChangeTime "2020-12-01T21:50:06-05:00"^^xsd:dateTime ;
+	uco-observable:modifiedTime "2005-09-14T12:58:00-04:00"^^xsd:dateTime ;
 	.
 
 kb:Identity-81d16dfe-c202-5035-9eb9-2039d6b95ceb
