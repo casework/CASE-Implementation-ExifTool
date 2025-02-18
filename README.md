@@ -82,3 +82,8 @@ Note that downloading known sample binary data (JPEG files) is not yet done for 
 This repository is tested in several POSIX environments.  See the [dependencies/](dependencies/) directory for package-installation and -configuration scripts for some of the test environments.
 
 Note that running tests in FreeBSD requires running `gmake`, not `make`.
+
+
+## Licensing
+
+Portions of this repository contributed by NIST are governed by the [NIST Software Licensing Statement](THIRD_PARTY_LICENSES.md#nist-software-licensing-statement).
