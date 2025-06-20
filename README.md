@@ -1,5 +1,8 @@
 # CASE Implementation: ExifTool
 
+[![Continuous Integration](https://github.com/casework/CASE-Implementation-ExifTool/actions/workflows/cicd.yml/badge.svg)](https://github.com/casework/CASE-Implementation-ExifTool/actions/workflows/cicd.yml)
+![CASE Version](https://img.shields.io/badge/CASE%20Version-1.4.0-green)
+
 This implementation maps the RDF output of [ExifTool](https://exiftool.org/) into [CASE](https://caseontology.org/).
 
 
