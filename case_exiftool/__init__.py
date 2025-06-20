@@ -18,7 +18,7 @@
 This tool parses the RDF output of ExifTool, mapping it into UCO properties and relationships-of-assumption.  An analyst should later annotate the output with their beliefs on its verity.
 """
 
-__version__ = "0.11.0"
+__version__ = "0.12.0"
 
 import argparse
 import contextlib
