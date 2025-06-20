@@ -1,5 +1,8 @@
 # CASE Implementation: ExifTool
 
+[![Continuous Integration](https://github.com/casework/CASE-Implementation-ExifTool/actions/workflows/cicd.yml/badge.svg)](https://github.com/casework/CASE-Implementation-ExifTool/actions/workflows/cicd.yml)
+![CASE Version](https://img.shields.io/badge/CASE%20Version-1.4.0-green)
+
 This implementation maps the RDF output of [ExifTool](https://exiftool.org/) into [CASE](https://caseontology.org/).
 
 
@@ -82,3 +85,10 @@ Note that downloading known sample binary data (JPEG files) is not yet done for 
 This repository is tested in several POSIX environments.  See the [dependencies/](dependencies/) directory for package-installation and -configuration scripts for some of the test environments.
 
 Note that running tests in FreeBSD requires running `gmake`, not `make`.
+
+
+## Licensing
+
+This repository is licensed under the Apache 2.0 License.  See [LICENSE](LICENSE).
+
+Portions of this repository contributed by NIST are governed by the [NIST Software Licensing Statement](THIRD_PARTY_LICENSES.md#nist-software-licensing-statement).

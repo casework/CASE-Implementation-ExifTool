@@ -1,5 +1,5 @@
-# Portions of this file contributed by NIST are governed by the following
-# statement:
+# Portions of this file contributed by NIST are governed by the
+# following statement:
 #
 # This software was developed at the National Institute of Standards
 # and Technology by employees of the Federal Government in the course
@@ -30,12 +30,12 @@ jobs:
       matrix:
         python-version:
           - '3.9'
-          - '3.12'
+          - '3.13'
 
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Review dependencies

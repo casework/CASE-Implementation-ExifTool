@@ -22,13 +22,14 @@ graph.parse("analysis.json", format="json-ld")
 nsdict = {k: v for (k, v) in graph.namespace_manager.namespaces()}
 
 
-def test_confirm_location_generated() -> None:
+def test_confirm_pdf_typed() -> None:
     query = rdflib.plugins.sparql.processor.prepareQuery(
         """\
-SELECT ?nLocation
+SELECT ?nPDFFile
 WHERE {
-  ?nLocation
-    a uco-location:Location
+  ?nPDFFile
+    a uco-observable:PDFFile
+    .
 }""",
         initNs=nsdict,
     )

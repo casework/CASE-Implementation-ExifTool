@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # Portions of this file contributed by NIST are governed by the
 # following statement:
 #
@@ -14,27 +12,30 @@
 #
 # We would appreciate acknowledgement if the software is used.
 
-import rdflib.plugins.sparql
+# This workflow uses Make to review direct dependencies of this
+# repository.
 
-graph = rdflib.Graph()
-graph.parse("analysis.json", format="json-ld")
+name: Supply Chain
 
-nsdict = {k: v for (k, v) in graph.namespace_manager.namespaces()}
+on:
+  schedule:
+    - cron: '15 5 * * 1,2,3,4,5'
 
+jobs:
+  build:
 
-def test_confirm_location_generated() -> None:
-    query = rdflib.plugins.sparql.processor.prepareQuery(
-        """\
-SELECT ?nLocation
-WHERE {
-  ?nLocation
-    a uco-location:Location
-}""",
-        initNs=nsdict,
-    )
-    iris = set()
-    for result in graph.query(query):
-        assert isinstance(result, rdflib.query.ResultRow)
-        assert isinstance(result[0], rdflib.term.IdentifiedNode)
-        iris.add(result[0].toPython())
-    assert len(iris) == 1
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - '3.9'
+          - '3.13'
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Review dependencies
+      run: make check-supply-chain

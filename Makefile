@@ -19,6 +19,7 @@ all: \
   .venv-pre-commit/var/.pre-commit-built.log
 
 .PHONY: \
+  check-mypy \
   check-supply-chain \
   check-supply-chain-pre-commit \
   download
@@ -59,24 +60,55 @@ all: \
 	touch $@
 
 check: \
-  .git_submodule_init.done.log \
-  .venv-pre-commit/var/.pre-commit-built.log
+  .venv-pre-commit/var/.pre-commit-built.log \
+  check-mypy
 	$(MAKE) \
 	  --directory tests \
 	  check
 
+check-mypy: \
+  .git_submodule_init.done.log
+	$(MAKE) \
+	  PYTHON3=python3 \
+	  --directory tests \
+	  check-mypy
+
 # This target's dependencies potentially modify the working directory's Git state, so it is intentionally not a dependency of check.
 check-supply-chain: \
+  check-mypy \
   check-supply-chain-pre-commit
 
 # This target is scheduled to run as part of prerelease review.
+# Update pre-commit configuration and use the updated config file to
+# review code.  Only have Make exit if 'pre-commit run' modifies files.
 check-supply-chain-pre-commit: \
   .venv-pre-commit/var/.pre-commit-built.log
 	source .venv-pre-commit/bin/activate \
 	  && pre-commit autoupdate
 	git diff \
 	  --exit-code \
-	  .pre-commit-config.yaml
+	  .pre-commit-config.yaml \
+	  || ( \
+	      source .venv-pre-commit/bin/activate \
+	        && pre-commit run \
+	          --all-files \
+	          --config .pre-commit-config.yaml \
+	    ) \
+	    || git diff \
+	      --exit-code \
+	      --stat \
+	      || ( \
+	          echo \
+	            "WARNING:Makefile:pre-commit configuration can be updated.  It appears the update would change file formatting." \
+	            >&2 \
+	            ; exit 1 \
+                )
+	@git diff \
+	  --exit-code \
+	  .pre-commit-config.yaml \
+	  || echo \
+	    "INFO:Makefile:pre-commit configuration can be updated.  It appears the update would not change file formatting." \
+	    >&2
 
 clean:
 	@rm -rf \

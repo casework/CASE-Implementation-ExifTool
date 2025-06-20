@@ -133,54 +133,11 @@
             }
         },
         {
-            "@id": "kb:FileFacet-f6087c69-499f-5c09-8ce7-d485ac378d73",
-            "@type": "uco-observable:FileFacet",
-            "uco-observable:accessedTime": {
-                "@type": "xsd:dateTime",
-                "@value": "2020-01-01T21:50:06-05:00"
-            },
-            "uco-observable:fileName": "799987.jpg",
-            "uco-observable:metadataChangeTime": {
-                "@type": "xsd:dateTime",
-                "@value": "2020-01-01T21:50:06-05:00"
-            },
-            "uco-observable:modifiedTime": {
-                "@type": "xsd:dateTime",
-                "@value": "2005-01-01T12:58:00-04:00"
-            }
-        },
-        {
-            "@id": "kb:Identity-81d16dfe-c202-5035-9eb9-2039d6b95ceb",
-            "@type": "uco-identity:Identity",
-            "uco-core:name": "NIKON CORPORATION"
-        },
-        {
-            "@id": "kb:LatLongCoordinatesFacet-ec3e547f-a861-58f1-8061-a1dab8ffee81",
-            "@type": "uco-location:LatLongCoordinatesFacet",
-            "uco-location:altitude": {
-                "@type": "xsd:decimal",
-                "@value": "151.0"
-            },
-            "uco-location:latitude": {
-                "@type": "xsd:decimal",
-                "@value": "30.3055"
-            },
-            "uco-location:longitude": {
-                "@type": "xsd:decimal",
-                "@value": "-89.3175"
-            }
-        },
-        {
-            "@id": "kb:Location-0344ffc4-92bb-56a0-a521-9bee75bf75ae",
-            "@type": "uco-location:Location",
-            "rdfs:label": "30 deg 18' 19.80\" N, 89 deg 19' 3.00\" W",
-            "uco-core:hasFacet": {
-                "@id": "kb:LatLongCoordinatesFacet-ec3e547f-a861-58f1-8061-a1dab8ffee81"
-            }
-        },
-        {
-            "@id": "kb:Picture-cf56e1ee-1343-5dd5-ae7e-f5aa3d7a39cb",
-            "@type": "uco-observable:ObservableObject",
+            "@id": "kb:File-cf56e1ee-1343-5dd5-ae7e-f5aa3d7a39cb",
+            "@type": [
+                "uco-observable:ObservableObject",
+                "uco-observable:RasterPicture"
+            ],
             "exiftool-et:toolkit": "Image::ExifTool 12.52",
             "exiftool-Composite:Aperture": [
                 "9",
@@ -558,6 +515,52 @@
             ]
         },
         {
+            "@id": "kb:FileFacet-f6087c69-499f-5c09-8ce7-d485ac378d73",
+            "@type": "uco-observable:FileFacet",
+            "uco-observable:accessedTime": {
+                "@type": "xsd:dateTime",
+                "@value": "2020-12-01T21:50:06-05:00"
+            },
+            "uco-observable:fileName": "799987.jpg",
+            "uco-observable:metadataChangeTime": {
+                "@type": "xsd:dateTime",
+                "@value": "2020-12-01T21:50:06-05:00"
+            },
+            "uco-observable:modifiedTime": {
+                "@type": "xsd:dateTime",
+                "@value": "2005-09-14T12:58:00-04:00"
+            }
+        },
+        {
+            "@id": "kb:Identity-81d16dfe-c202-5035-9eb9-2039d6b95ceb",
+            "@type": "uco-identity:Identity",
+            "uco-core:name": "NIKON CORPORATION"
+        },
+        {
+            "@id": "kb:LatLongCoordinatesFacet-ec3e547f-a861-58f1-8061-a1dab8ffee81",
+            "@type": "uco-location:LatLongCoordinatesFacet",
+            "uco-location:altitude": {
+                "@type": "xsd:decimal",
+                "@value": "151.0"
+            },
+            "uco-location:latitude": {
+                "@type": "xsd:decimal",
+                "@value": "30.3055"
+            },
+            "uco-location:longitude": {
+                "@type": "xsd:decimal",
+                "@value": "-89.3175"
+            }
+        },
+        {
+            "@id": "kb:Location-0344ffc4-92bb-56a0-a521-9bee75bf75ae",
+            "@type": "uco-location:Location",
+            "rdfs:label": "30 deg 18' 19.80\" N, 89 deg 19' 3.00\" W",
+            "uco-core:hasFacet": {
+                "@id": "kb:LatLongCoordinatesFacet-ec3e547f-a861-58f1-8061-a1dab8ffee81"
+            }
+        },
+        {
             "@id": "kb:RasterPictureFacet-54be98e9-2d5c-5380-8983-120c20925fc7",
             "@type": "uco-observable:RasterPictureFacet",
             "uco-observable:pictureHeight": {
@@ -582,7 +585,7 @@
                 "@id": "kb:Location-0344ffc4-92bb-56a0-a521-9bee75bf75ae"
             },
             "uco-core:target": {
-                "@id": "kb:Picture-cf56e1ee-1343-5dd5-ae7e-f5aa3d7a39cb"
+                "@id": "kb:File-cf56e1ee-1343-5dd5-ae7e-f5aa3d7a39cb"
             }
         },
         {

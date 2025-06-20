@@ -105,34 +105,11 @@ kb:EXIFFacet-4eca7207-7d27-5dbe-ac3d-abe14b2e8dd7
 	uco-observable:exifData kb:ControlledDictionary-ebc7036e-eb91-5d30-bef3-b7f983ffc3d1 ;
 	.
 
-kb:FileFacet-f6087c69-499f-5c09-8ce7-d485ac378d73
-	a uco-observable:FileFacet ;
-	uco-observable:accessedTime "2020-01-01T21:50:06-05:00"^^xsd:dateTime ;
-	uco-observable:fileName "799987.jpg" ;
-	uco-observable:metadataChangeTime "2020-01-01T21:50:06-05:00"^^xsd:dateTime ;
-	uco-observable:modifiedTime "2005-01-01T12:58:00-04:00"^^xsd:dateTime ;
-	.
-
-kb:Identity-81d16dfe-c202-5035-9eb9-2039d6b95ceb
-	a uco-identity:Identity ;
-	uco-core:name "NIKON CORPORATION" ;
-	.
-
-kb:LatLongCoordinatesFacet-ec3e547f-a861-58f1-8061-a1dab8ffee81
-	a uco-location:LatLongCoordinatesFacet ;
-	uco-location:altitude "151.0"^^xsd:decimal ;
-	uco-location:latitude "30.3055"^^xsd:decimal ;
-	uco-location:longitude "-89.3175"^^xsd:decimal ;
-	.
-
-kb:Location-0344ffc4-92bb-56a0-a521-9bee75bf75ae
-	a uco-location:Location ;
-	rdfs:label "30 deg 18' 19.80\" N, 89 deg 19' 3.00\" W" ;
-	uco-core:hasFacet kb:LatLongCoordinatesFacet-ec3e547f-a861-58f1-8061-a1dab8ffee81 ;
-	.
-
-kb:Picture-cf56e1ee-1343-5dd5-ae7e-f5aa3d7a39cb
-	a uco-observable:ObservableObject ;
+kb:File-cf56e1ee-1343-5dd5-ae7e-f5aa3d7a39cb
+	a
+		uco-observable:ObservableObject ,
+		uco-observable:RasterPicture
+		;
 	exiftool-et:toolkit "Image::ExifTool 12.52" ;
 	exiftool-Composite:Aperture
 		"9" ,
@@ -494,6 +471,32 @@ kb:Picture-cf56e1ee-1343-5dd5-ae7e-f5aa3d7a39cb
 		;
 	.
 
+kb:FileFacet-f6087c69-499f-5c09-8ce7-d485ac378d73
+	a uco-observable:FileFacet ;
+	uco-observable:accessedTime "2020-12-01T21:50:06-05:00"^^xsd:dateTime ;
+	uco-observable:fileName "799987.jpg" ;
+	uco-observable:metadataChangeTime "2020-12-01T21:50:06-05:00"^^xsd:dateTime ;
+	uco-observable:modifiedTime "2005-09-14T12:58:00-04:00"^^xsd:dateTime ;
+	.
+
+kb:Identity-81d16dfe-c202-5035-9eb9-2039d6b95ceb
+	a uco-identity:Identity ;
+	uco-core:name "NIKON CORPORATION" ;
+	.
+
+kb:LatLongCoordinatesFacet-ec3e547f-a861-58f1-8061-a1dab8ffee81
+	a uco-location:LatLongCoordinatesFacet ;
+	uco-location:altitude "151.0"^^xsd:decimal ;
+	uco-location:latitude "30.3055"^^xsd:decimal ;
+	uco-location:longitude "-89.3175"^^xsd:decimal ;
+	.
+
+kb:Location-0344ffc4-92bb-56a0-a521-9bee75bf75ae
+	a uco-location:Location ;
+	rdfs:label "30 deg 18' 19.80\" N, 89 deg 19' 3.00\" W" ;
+	uco-core:hasFacet kb:LatLongCoordinatesFacet-ec3e547f-a861-58f1-8061-a1dab8ffee81 ;
+	.
+
 kb:RasterPictureFacet-54be98e9-2d5c-5380-8983-120c20925fc7
 	a uco-observable:RasterPictureFacet ;
 	uco-observable:pictureHeight "1960"^^xsd:integer ;
@@ -506,7 +509,7 @@ kb:Relationship-51103e2a-7679-57c3-8d6f-1f8d1ff574e7
 	uco-core:isDirectional "true"^^xsd:boolean ;
 	uco-core:kindOfRelationship "Extracted_From" ;
 	uco-core:source kb:Location-0344ffc4-92bb-56a0-a521-9bee75bf75ae ;
-	uco-core:target kb:Picture-cf56e1ee-1343-5dd5-ae7e-f5aa3d7a39cb ;
+	uco-core:target kb:File-cf56e1ee-1343-5dd5-ae7e-f5aa3d7a39cb ;
 	.
 
 kb:UNIXFilePermissionsFacet-a389abb8-0b57-591a-84b6-686e52ca5ae3

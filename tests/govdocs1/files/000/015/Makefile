@@ -50,14 +50,14 @@ analysis.json: \
 analysis.ttl: \
   $(tests_srcdir)/.venv.done.log \
   $(top_srcdir)/case_exiftool/__init__.py \
-  799987_printConv.xml \
-  799987_raw.xml
+  000015_printConv.xml \
+  000015_raw.xml
 	export CDO_DEMO_NONRANDOM_UUID_BASE=$(top_srcdir) \
 	  && source $(top_srcdir)/tests/venv/bin/activate \
 	    && case_exiftool \
 	      --output-format turtle \
-	      --print-conv-xml 799987_printConv.xml \
-	      --raw-xml 799987_raw.xml \
+	      --print-conv-xml 000015_printConv.xml \
+	      --raw-xml 000015_raw.xml \
 	      --use-deterministic-uuids \
 	      __$@
 	source $(top_srcdir)/tests/venv/bin/activate \
@@ -75,12 +75,12 @@ analysis.ttl: \
 
 # This recipe is provided in case one wishes to reproduce the XML from the original JPEG file.
 # TODO Discuss hosting govdocs samples on files.caseontology.org.
-799987_printConv.xml:
+000015_printConv.xml:
 	exiftool \
 	  -binary \
 	  -duplicates \
 	  -xmlFormat \
-	  ./799/799987.jpg \
+	  ./000015.pdf \
 	  | sed \
 	    -e "s_rdf:Description rdf:about='./_rdf:Description rdf:about='http://example.org/kb/govdocs1/_" \
 	    > _$@
@@ -89,13 +89,13 @@ analysis.ttl: \
 # NOTE: Contrary to other tools where "--" is an enabling flag pattern, "--printConv" is the flag to turn printConv off.
 # This recipe is provided in case one wishes to reproduce the XML from the original JPEG file.
 # TODO Discuss hosting govdocs samples on files.caseontology.org.
-799987_raw.xml:
+000015_raw.xml:
 	exiftool \
 	  --printConv \
 	  -binary \
 	  -duplicates \
 	  -xmlFormat \
-	  ./799/799987.jpg \
+	  ./000015.pdf \
 	  | sed \
 	    -e "s_rdf:Description rdf:about='./_rdf:Description rdf:about='http://example.org/kb/govdocs1/_" \
 	    > _$@

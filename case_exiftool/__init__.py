@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 
+# Portions of this file contributed by NIST are governed by the
+# following statement:
+#
 # This software was developed at the National Institute of Standards
 # and Technology by employees of the Federal Government in the course
-# of their official duties. Pursuant to title 17 Section 105 of the
-# United States Code this software is not subject to copyright
-# protection and is in the public domain. NIST assumes no
-# responsibility whatsoever for its use by other parties, and makes
-# no guarantees, expressed or implied, about its quality,
-# reliability, or any other characteristic.
+# of their official duties. Pursuant to Title 17 Section 105 of the
+# United States Code, this software is not subject to copyright
+# protection within the United States. NIST assumes no responsibility
+# whatsoever for its use by other parties, and makes no guarantees,
+# expressed or implied, about its quality, reliability, or any other
+# characteristic.
 #
 # We would appreciate acknowledgement if the software is used.
 
@@ -15,7 +18,7 @@
 This tool parses the RDF output of ExifTool, mapping it into UCO properties and relationships-of-assumption.  An analyst should later annotate the output with their beliefs on its verity.
 """
 
-__version__ = "0.11.0"
+__version__ = "0.12.0"
 
 import argparse
 import contextlib
@@ -41,6 +44,7 @@ from cdo_local_uuid import local_uuid
 
 _logger = logging.getLogger(os.path.basename(__file__))
 
+NS_DRAFTING = rdflib.Namespace("http://example.org/ontology/drafting/")
 NS_EXIFTOOL_COMPOSITE = rdflib.Namespace("http://ns.exiftool.org/Composite/1.0/")
 NS_EXIFTOOL_ET = rdflib.Namespace("http://ns.exiftool.org/1.0/")
 NS_EXIFTOOL_EXIFTOOL = rdflib.Namespace("http://ns.exiftool.org/ExifTool/1.0/")
@@ -50,6 +54,7 @@ NS_EXIFTOOL_FILE = rdflib.Namespace("http://ns.exiftool.org/File/1.0/")
 NS_EXIFTOOL_IFD0 = rdflib.Namespace("http://ns.exiftool.org/EXIF/IFD0/1.0/")
 NS_EXIFTOOL_EXIFIFD = rdflib.Namespace("http://ns.exiftool.org/EXIF/ExifIFD/1.0/")
 NS_EXIFTOOL_NIKON = rdflib.Namespace("http://ns.exiftool.org/MakerNotes/Nikon/1.0/")
+NS_EXIFTOOL_PDF_PDF = rdflib.Namespace("http://ns.exiftool.org/PDF/PDF/1.0/")
 NS_EXIFTOOL_PREVIEWIFD = rdflib.Namespace(
     "http://ns.exiftool.org/MakerNotes/PreviewIFD/1.0/"
 )
@@ -132,6 +137,49 @@ def manufacturer_name_to_node(
     return n_manufacturer
 
 
+def maybe_cast_timestamp(l_value: rdflib.Literal) -> typing.Optional[rdflib.Literal]:
+    """
+    This function attempts some conversion of timestamp strings.
+
+    >>> import rdflib
+    >>> l_timestamp_0 = rdflib.Literal("2020-01-02 03:04:05-05:00")
+    >>> maybe_cast_timestamp(l_timestamp_0)
+    rdflib.term.Literal('2020-01-02T03:04:05-05:00', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#dateTime'))
+    >>> l_timestamp_1 = rdflib.Literal("2020-01-02T03:04:05-05:00", datatype=rdflib.XSD.string)
+    >>> maybe_cast_timestamp(l_timestamp_1)
+    rdflib.term.Literal('2020-01-02T03:04:05-05:00', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#dateTime'))
+    >>> assert maybe_cast_timestamp(l_timestamp_0) == maybe_cast_timestamp(l_timestamp_1)
+    >>> # Note: Colons are used in this sample instead of dashes for year-month-day delimiting.
+    >>> l_timestamp_2 = rdflib.Literal("2020:01:02T03:04:05-05:00")
+    >>> maybe_cast_timestamp(l_timestamp_2)
+    rdflib.term.Literal('2020-01-02T03:04:05-05:00', datatype=rdflib.term.URIRef('http://www.w3.org/2001/XMLSchema#dateTime'))
+    >>> l_timestamp_3 = rdflib.Literal("Thu Jan  2 03:04:05 EST 2020", datatype=rdflib.XSD.string)
+    >>> maybe_cast_timestamp(l_timestamp_3)
+    """
+    if l_value.datatype == NS_XSD.dateTime:
+        return l_value
+    elif l_value.datatype != NS_XSD.string and l_value.datatype is not None:
+        raise NotImplementedError(l_value)
+    s_value = str(l_value)
+    if s_value[4] != "-":
+        maybe_year = s_value[0:4]
+        if not maybe_year.isnumeric():
+            return None
+        s_value = "".join(
+            [
+                maybe_year,
+                "-",
+                s_value[5:7],
+                "-",
+                s_value[8:],
+            ]
+        )
+    try:
+        return rdflib.Literal(s_value.replace(" ", "T"), datatype=NS_XSD.dateTime)
+    except ValueError:
+        return None
+
+
 class ExifToolRDFMapper(object):
     """
     This class maps ExifTool RDF predicates into UCO objects and Facets.
@@ -161,6 +209,11 @@ class ExifToolRDFMapper(object):
         self._exif_dictionary_dict: typing.Optional[
             typing.Dict[str, rdflib.Literal]
         ] = None
+
+        self._pdf_dictionary_dict: typing.Optional[typing.Dict[str, rdflib.Literal]] = (
+            None
+        )
+
         self._graph = graph
 
         self._use_deterministic_uuids = use_deterministic_uuids
@@ -175,12 +228,14 @@ class ExifToolRDFMapper(object):
         self._n_exif_facet: typing.Optional[rdflib.URIRef] = None
         self._n_file_facet: typing.Optional[rdflib.URIRef] = None
         self._n_location_object: typing.Optional[rdflib.URIRef] = None
+        self._n_pdf_dictionary_object: typing.Optional[rdflib.URIRef] = None
+        self._n_pdf_file_facet: typing.Optional[rdflib.URIRef] = None
         self._n_location_object_latlong_facet: typing.Optional[rdflib.URIRef] = None
         self._n_observable_object: typing.Optional[rdflib.URIRef] = None
         self._n_raster_picture_facet: typing.Optional[rdflib.URIRef] = None
         self._n_relationship_object_location: typing.Optional[rdflib.URIRef] = None
         self._n_unix_file_permissions_facet: typing.Optional[rdflib.URIRef] = None
-        self._oo_slug: typing.Optional[str] = None
+        self._oo_slug: str = "File-"
         self.ns_base = ns_base
 
     def map_raw_and_printconv_iri(self, n_exiftool_predicate: rdflib.URIRef) -> None:
@@ -303,41 +358,41 @@ class ExifToolRDFMapper(object):
         elif exiftool_iri == "http://ns.exiftool.org/File/System/1.0/FileAccessDate":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
-                self.graph.add(
-                    (
-                        self.n_file_facet,
-                        NS_UCO_OBSERVABLE.accessedTime,
-                        rdflib.Literal(
-                            v_raw.toPython().replace(" ", "T"), datatype=NS_XSD.dateTime
-                        ),
+                maybe_l_timestamp = maybe_cast_timestamp(v_raw)
+                if maybe_l_timestamp is not None:
+                    self.graph.add(
+                        (
+                            self.n_file_facet,
+                            NS_UCO_OBSERVABLE.accessedTime,
+                            maybe_l_timestamp,
+                        )
                     )
-                )
         elif (
             exiftool_iri == "http://ns.exiftool.org/File/System/1.0/FileInodeChangeDate"
         ):
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
-                self.graph.add(
-                    (
-                        self.n_file_facet,
-                        NS_UCO_OBSERVABLE.metadataChangeTime,
-                        rdflib.Literal(
-                            v_raw.toPython().replace(" ", "T"), datatype=NS_XSD.dateTime
-                        ),
+                maybe_l_timestamp = maybe_cast_timestamp(v_raw)
+                if maybe_l_timestamp is not None:
+                    self.graph.add(
+                        (
+                            self.n_file_facet,
+                            NS_UCO_OBSERVABLE.metadataChangeTime,
+                            maybe_l_timestamp,
+                        )
                     )
-                )
         elif exiftool_iri == "http://ns.exiftool.org/File/System/1.0/FileModifyDate":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
-                self.graph.add(
-                    (
-                        self.n_file_facet,
-                        NS_UCO_OBSERVABLE.modifiedTime,
-                        rdflib.Literal(
-                            v_raw.toPython().replace(" ", "T"), datatype=NS_XSD.dateTime
-                        ),
+                maybe_l_timestamp = maybe_cast_timestamp(v_raw)
+                if maybe_l_timestamp is not None:
+                    self.graph.add(
+                        (
+                            self.n_file_facet,
+                            NS_UCO_OBSERVABLE.modifiedTime,
+                            maybe_l_timestamp,
+                        )
                     )
-                )
         elif exiftool_iri == "http://ns.exiftool.org/File/System/1.0/FileName":
             (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
             if isinstance(v_raw, rdflib.Literal):
@@ -367,6 +422,121 @@ class ExifToolRDFMapper(object):
                         self.n_content_data_facet,
                         NS_UCO_OBSERVABLE.sizeInBytes,
                         rdflib.Literal(int(v_raw.toPython())),
+                    )
+                )
+        elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/Author":
+            (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
+            if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["Author"] = v_raw
+                self.graph.add(
+                    (
+                        self.n_pdf_file_facet,
+                        NS_DRAFTING.pdfAuthor,
+                        rdflib.Literal(v_raw.toPython()),
+                    )
+                )
+        elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/CreateDate":
+            (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
+            if isinstance(v_raw, rdflib.Literal):
+                # CreationDate entry in self.pdf_dictionary_dict references term in ISO 32000-1:2008 PDF Table 317.
+                self.pdf_dictionary_dict["CreationDate"] = v_raw
+                maybe_l_timestamp = maybe_cast_timestamp(v_raw)
+                if maybe_l_timestamp is not None:
+                    self.graph.add(
+                        (
+                            self.n_pdf_file_facet,
+                            NS_UCO_OBSERVABLE.pdfCreationDate,
+                            maybe_l_timestamp,
+                        )
+                    )
+        elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/Creator":
+            (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
+            if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["Creator"] = v_raw
+                self.graph.add(
+                    (
+                        self.n_pdf_file_facet,
+                        NS_DRAFTING.pdfCreator,
+                        rdflib.Literal(v_raw.toPython()),
+                    )
+                )
+        elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/Linearized":
+            (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
+            if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["Linearized"] = v_raw
+                self.graph.add(
+                    (
+                        self.n_pdf_file_facet,
+                        NS_DRAFTING.pdfLinearized,
+                        rdflib.Literal(v_raw.toPython()),
+                    )
+                )
+        elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/ModifyDate":
+            (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
+            if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["ModDate"] = v_raw
+                maybe_l_timestamp = maybe_cast_timestamp(v_raw)
+                if maybe_l_timestamp is not None:
+                    self.graph.add(
+                        (
+                            self.n_pdf_file_facet,
+                            NS_UCO_OBSERVABLE.pdfModDate,
+                            maybe_l_timestamp,
+                        )
+                    )
+        elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/PDFVersion":
+            (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
+            if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["PDFVersion"] = v_raw
+                self.graph.add(
+                    (
+                        self.n_pdf_file_facet,
+                        NS_UCO_OBSERVABLE.version,
+                        rdflib.Literal(v_raw.toPython()),
+                    )
+                )
+        elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/PageCount":
+            (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
+            if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["PageCount"] = v_raw
+                self.graph.add(
+                    (
+                        self.n_pdf_file_facet,
+                        NS_DRAFTING.pdfPageCount,
+                        rdflib.Literal(v_raw.toPython()),
+                    )
+                )
+        elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/Producer":
+            (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
+            if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["Producer"] = v_raw
+                self.graph.add(
+                    (
+                        self.n_pdf_file_facet,
+                        NS_DRAFTING.pdfProducer,
+                        rdflib.Literal(v_raw.toPython()),
+                    )
+                )
+        elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/Subject":
+            (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
+            if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["Subject"] = v_raw
+                self.graph.add(
+                    (
+                        self.n_pdf_file_facet,
+                        NS_DRAFTING.pdfSubject,
+                        rdflib.Literal(v_raw.toPython()),
+                    )
+                )
+        elif exiftool_iri == "http://ns.exiftool.org/PDF/PDF/1.0/Title":
+            (v_raw, v_printconv) = self.pop_n_exiftool_predicate(n_exiftool_predicate)
+            if isinstance(v_raw, rdflib.Literal):
+                self.pdf_dictionary_dict["Title"] = v_raw
+                self.graph.add(
+                    (
+                        self.n_pdf_file_facet,
+                        NS_DRAFTING.pdfTitle,
+                        rdflib.Literal(v_raw.toPython()),
                     )
                 )
         else:
@@ -423,16 +593,6 @@ class ExifToolRDFMapper(object):
             rdflib.URIRef("http://ns.exiftool.org/File/1.0/MIMEType")
         )
 
-        # Determine slug by MIME type.
-        self.oo_slug = "File-"  # The prefix "oo_" means generic observable object.
-        if self.mime_type == "image/jpeg":
-            self.oo_slug = "Picture-"
-        else:
-            _logger.warning("TODO - MIME type %r not yet implemented." % self.mime_type)
-
-        # Access observable object to instantiate it with the oo_slug value.
-        _ = self.n_observable_object
-
         # Finish special case MIME type processing left undone by map_raw_and_printconv_iri.
         if self.mime_type is not None:
             self.graph.add(
@@ -462,6 +622,8 @@ class ExifToolRDFMapper(object):
         # Derive remaining objects.
         if self._exif_dictionary_dict is not None:
             _ = self.n_exif_dictionary_object
+        if self._pdf_dictionary_dict is not None:
+            _ = self.n_pdf_dictionary_object
         if self._n_location_object is not None:
             _ = self.n_relationship_object_location
 
@@ -500,6 +662,16 @@ class ExifToolRDFMapper(object):
         return self._exif_dictionary_dict
 
     @property
+    def pdf_dictionary_dict(self) -> typing.Dict[str, rdflib.Literal]:
+        """
+        Initialized on first access.
+        Controlled dictionary keys reference terms from ISO 32000-1:2008 PDF Table 317 and ExifTool Tag Names.
+        """
+        if self._pdf_dictionary_dict is None:
+            self._pdf_dictionary_dict = dict()
+        return self._pdf_dictionary_dict
+
+    @property
     def graph(self) -> rdflib.Graph:
         """
         No setter provided.
@@ -514,6 +686,19 @@ class ExifToolRDFMapper(object):
     def mime_type(self, value: str) -> None:
         assert isinstance(value, str)
         self._mime_type = value
+        if value == "application/pdf":
+            self.graph.add(
+                (self.n_observable_object, NS_RDF.type, NS_UCO_OBSERVABLE.PDFFile)
+            )
+        elif self.mime_type == "image/jpeg":
+            self.graph.add(
+                (self.n_observable_object, NS_RDF.type, NS_UCO_OBSERVABLE.RasterPicture)
+            )
+
+        else:
+            _logger.warning("TODO - MIME type %r not yet implemented." % self.mime_type)
+
+        # Access observable object to instantiate it with the oo_slug value.
 
     @property
     def n_camera_object(self) -> rdflib.URIRef:
@@ -852,6 +1037,46 @@ class ExifToolRDFMapper(object):
         self._oo_slug = value
 
     @property
+    def n_pdf_file_facet(self) -> rdflib.URIRef:
+        """
+        Initialized on first access.
+        """
+        if self._n_pdf_file_facet is None:
+            if self.use_deterministic_uuids:
+                self._n_pdf_file_facet = case_utils.inherent_uuid.get_facet_uriref(
+                    self.n_observable_object,
+                    NS_UCO_OBSERVABLE.PDFFileFacet,
+                    namespace=self.ns_base,
+                )
+            else:
+                self._n_pdf_file_facet = self.ns_base["PDFFileFacet-" + local_uuid()]
+            self.graph.add(
+                (self._n_pdf_file_facet, NS_RDF.type, NS_UCO_OBSERVABLE.PDFFileFacet)
+            )
+            self.graph.add(
+                (self.n_observable_object, NS_UCO_CORE.hasFacet, self._n_pdf_file_facet)
+            )
+        return self._n_pdf_file_facet
+
+    @property
+    def n_pdf_dictionary_object(self) -> rdflib.URIRef:
+        """
+        Initialized on first access.
+        """
+        if self._n_pdf_dictionary_object is None:
+            self._n_pdf_dictionary_object = controlled_dictionary_object_to_node(
+                self.graph, self.ns_base, self.pdf_dictionary_dict
+            )
+            self.graph.add(
+                (
+                    self.n_pdf_file_facet,
+                    NS_UCO_OBSERVABLE.documentInformationDictionary,
+                    self._n_pdf_dictionary_object,
+                )
+            )
+        return self._n_pdf_dictionary_object
+
+    @property
     def use_deterministic_uuids(self) -> bool:
         """
         No setter provided.
@@ -868,10 +1093,12 @@ def main() -> None:
     NS_BASE = rdflib.Namespace(args.base_prefix)
     out_graph = rdflib.Graph()
 
+    out_graph.namespace_manager.bind("drafting", NS_DRAFTING)
     out_graph.namespace_manager.bind("exiftool-Composite", NS_EXIFTOOL_COMPOSITE)
     out_graph.namespace_manager.bind("exiftool-et", NS_EXIFTOOL_ET)
     out_graph.namespace_manager.bind("exiftool-ExifTool", NS_EXIFTOOL_EXIFTOOL)
     out_graph.namespace_manager.bind("exiftool-System", NS_EXIFTOOL_SYSTEM)
+    out_graph.namespace_manager.bind("exiftool-PDF-PDF", NS_EXIFTOOL_PDF_PDF)
     out_graph.namespace_manager.bind("exiftool-File", NS_EXIFTOOL_FILE)
     out_graph.namespace_manager.bind("exiftool-GPS", NS_EXIFTOOL_GPS)
     out_graph.namespace_manager.bind("exiftool-IFD0", NS_EXIFTOOL_IFD0)
